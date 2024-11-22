@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:alpine
+    container_name: postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${db_name}
+      POSTGRES_USER: ${db_user}
+      POSTGRES_PASSWORD: ${db_password}
+    ports:
+      - "${db_port}:5432"
+    networks:
+      - service
+
+
+  web:
+    build: .
+    container_name: django_app
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=service.settings
+      - POSTGRES_DB=${db_name}
+      - POSTGRES_USER=${db_user}
+      - POSTGRES_PASSWORD=${db_password}
+      - POSTGRES_HOST=${db_host}
+      - POSTGRES_PORT=${db_port}
+    depends_on:
+      - postgres
+    networks:
+      - service
+  
+
+
+networks:
+  service:
+    driver: bridge
